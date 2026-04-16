@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="canonical" href="https://nteste05.github.io/preskrop/" />
+    <link rel="icon" type="image/jpeg" href="preskrop-favicon.jpeg" sizes="32x32">
+    <link rel="apple-touch-icon" sizes="180x180" href="preskrop-favicon.jpeg">
+    <link rel="manifest" href="manifest.json">
+    
+    <title>PresKrop: Aplikasi Kompres dan Krop Gambar</title>
+    <meta name="description" content="Kompres dan krop gambar online dengan Preskrop. Ubah ukuran file tanpa pecah & potong foto presisi untuk web atau sosmed. Cepat, gratis, dan aman. Coba sekarang!">
+    <meta name="keywords" content="Kompres gambar online, krop gambar online, Kompres foto online, Aplikasi edit gambar web, Preskrop">
+    <meta name="robots" content="index, follow">
+    
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://nteste05.github.io/preskrop">
+    <meta property="og:title" content="PresKrop: Aplikasi Kompres dan Krop Gambar">
+    <meta property="og:description" content="Kompres dan krop gambar online dengan Preskrop. Ubah ukuran file tanpa pecah & potong foto presisi untuk web atau sosmed. Cepat, gratis, dan aman. Coba sekarang!">
+    <meta property="og:image" content="https://raw.githubusercontent.com/nteste05/preskrop/refs/heads/main/preskrop-thumb.jpeg">
+    
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://nteste05.github.io/preskrop">
+    <meta property="twitter:title" content="PresKrop: Aplikasi Kompres dan Krop Gambar">
+    <meta property="twitter:description" content="Kompres dan krop gambar online dengan Preskrop. Ubah ukuran file tanpa pecah & potong foto presisi untuk web atau sosmed. Cepat, gratis, dan aman. Coba sekarang!">
+    <meta property="twitter:image" content="https://raw.githubusercontent.com/nteste05/preskrop/refs/heads/main/preskrop-thumb.jpeg">
+    
+    <style>
+        :root { --primary: #4f46e5; --secondary: #10b981; --bg: #f3f4f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 10px; margin: 0; }
+        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 480px; }
+        
+        h2 { text-align: center; color: #333; margin-top: 0; }
+        .section { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #555; font-size: 0.9rem; }
+        
+        input[type="file"], input[type="number"], select, input[type="range"] {
+            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box;
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type="range"]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            background: #ddd; 
+            border-radius: 4px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #007bff;
+            cursor: pointer;
+            margin-top: -6px;
+        }
+        
+        /* Tab Styling */
+        .tabs { display: flex; gap: 5px; margin: 20px 0; background: #eee; padding: 5px; border-radius: 10px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 7px; cursor: pointer; background: none; font-weight: bold; transition: 0.3s; }
+        .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Canvas & UI */
+        .crop-wrapper { width: 100%; background: #333; border-radius: 8px; overflow: hidden; position: relative; touch-action: none; margin-top: 10px; }
+        #cropCanvas { display: block; max-width: 100%; cursor: crosshair; margin: 0 auto; }
+        .row { display: flex; gap: 10px; }
+        
+        button { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .btn-main { background: var(--primary); color: white; }
+        .btn-main:disabled { background: #ccc; cursor: not-allowed; }
+        
+        #result-panel { margin-top: 25px; padding-top: 20px; border-top: 2px dashed #eee; display: none; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.85rem; margin-bottom: 15px; }
+        .info-item { background: #f9fafb; padding: 8px; border-radius: 5px; border: 1px solid #eee; }
+        .info-item b { display: block; color: #888; font-size: 0.7rem; }
+        
+        #canvas { width: 100%; height: auto; border-radius: 8px; border: 1px solid #ddd; }
+        #downloadBtn { background: var(--secondary); color: white; }
+        
+        .navbar {
+            color: #555;
+            width: 100%;
+            padding: 0;
+            margin: 0 0 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            color: #555;
+            font-size: 24px;
+            cursor: pointer;
+            margin: 0 20px 0 0;
+        }
+
+        header h1 {
+            font-size: 24px;
+            margin:0;
+        }
+
+        .sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 2000;
+            top: 0;
+            left: 0;
+            background-color: #1a1a1a;
+            overflow-x: hidden;
+            transition: 0.3s;
+            padding-top: 10px;
+        }
+
+        .sidebar a {
+            padding: 15px 30px;
+            text-decoration: none;
+            font-size: 1.1rem;
+            color: #ccc;
+            display: block;
+            transition: 0.2s;
+            border-bottom: 1px solid #333;
+        }
+
+        .sidebar a:hover {
+            color: #ffc107;
+            background-color: #222;
+        }
+
+        .sidebar .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 36px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .overlaynav {
+            display: none;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1500;
+        }
+        
+        .visually-hidden {
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            padding: 0 !important;
+            margin: -1px !important;
+            overflow: hidden !important;
+            clip: rect(0, 0, 0, 0) !important;
+            white-space: nowrap !important;
+            border: 0 !important;
+        }
+        
+    </style>
+</head>
+<body>
+
+<div class="card">
+    
+        <!-- Sidebar Menu -->
+        <div id="mySidebar" class="sidebar">
+            <span class="close-btn" onclick="closeNav()">&times;</span>
+            <a href="https://nteste05.github.io/gemii/" onclick="closeNav()">👽 Lainnya</a>
+        </div>
+        <!-- Overlay Background -->
+        <div id="overlaynav" class="overlaynav" onclick="closeNav()"></div>
+        <nav class="navbar">
+            <div class="menu-btn" onclick="openNav()">&#9776;</div>
+            <header><h1>PresKrop</h1></header>
+        </nav>
+    
+    <div class="section">
+        <label>1. Pilih Gambar</label>
+        <input type="file" id="upload" accept="image/*">
+        <p>*) File tidak dikirim ke server, hanya di browser.</p>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="openTab(event, 'compress-tab')">Kompresi</button>
+        <button class="tab-btn" onclick="openTab(event, 'crop-tab')">Potong (Crop)</button>
+    </div>
+
+    <!-- Tab 1: Kompresi -->
+    <div id="compress-tab" class="tab-content active">
+        <div class="section">
+            <label>Format & Kualitas (<span id="qVal">80%</span>)</label>
+            <select id="format">
+                <option value="image/jpeg">JPG</option>
+                <option value="image/png">PNG</option>
+                <option value="image/webp">WebP</option>
+            </select>
+            <input type="range" id="quality" min="1" max="100" value="80" style="margin-top:10px">
+        </div>
+        <div class="section">
+            <label>Dimensi (px)</label>
+            <div class="row">
+                <input type="number" id="width" placeholder="Lebar">
+                <input type="number" id="height" placeholder="Tinggi">
+            </div>
+            <label style="font-weight:normal; margin-top:5px">
+                <input type="checkbox" id="aspectRatio" checked> Kunci Rasio
+            </label>
+        </div>
+        <button id="compressBtn" class="btn-main" disabled>PROSES KOMPRES</button>
+    </div>
+
+    <!-- Tab 2: Crop -->
+    <div id="crop-tab" class="tab-content">
+        <div class="section">
+            <label>Rasio Potong</label>
+            <select id="aspectRatioSelect">
+                <option value="free">Bebas</option>
+                <option value="1">1:1 (Kotak)</option>
+                <option value="1.33">4:3</option>
+                <option value="1.77">16:9</option>
+            </select>
+        </div>
+        <div class="crop-wrapper">
+            <canvas id="cropCanvas"></canvas>
+        </div>
+        <button id="cropBtn" class="btn-main" disabled>POTONG GAMBAR</button>
+        <p>*) Tap/klik lagi pada seleksi sebelum menekan tombol "POTONG GAMBAR"</p>
+        <p>*) Untuk format lain, pilih dulu di tab Kompresi</p>
+    </div>
+
+    <!-- Panel Hasil -->
+    <div id="result-panel">
+        <div class="info-grid">
+            <div class="info-item"><b>Format</b><span id="resType">-</span></div>
+            <div class="info-item"><b>Ukuran Baru</b><span id="resNewSize">-</span></div>
+        </div>
+        <canvas id="canvas"></canvas>
+        <button id="downloadBtn">DOWNLOAD SEKARANG</button>
+    </div>
+</div>
+
+<script>
+    const upload = document.getElementById('upload');
+    const widthInput = document.getElementById('width');
+    const heightInput = document.getElementById('height');
+    const qualityInput = document.getElementById('quality');
+    const formatSelect = document.getElementById('format');
+    const compressBtn = document.getElementById('compressBtn');
+    const cropBtn = document.getElementById('cropBtn');
+    const canvas = document.getElementById('canvas');
+    const cropCanvas = document.getElementById('cropCanvas');
+    const ctxCrop = cropCanvas.getContext('2d');
+    const resultPanel = document.getElementById('result-panel');
+
+    let img = new Image();
+    let originalRatio = 1;
+    let scale = 1;
+    let cropArea = { x: 20, y: 20, w: 100, h: 100 };
+    let isMoving = false, isResizing = false, isCreating = false;
+    let startX, startY;
+
+    // --- LOGIKA TAB ---
+    function openTab(evt, tabName) {
+        document.querySelectorAll(".tab-content").forEach(t => t.style.display = "none");
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.classList.add("active");
+        if(tabName === 'crop-tab' && img.src) renderCrop();
+    }
+
+    // --- UPLOAD GAMBAR ---
+    upload.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            img.onload = () => {
+                originalRatio = img.width / img.height;
+                widthInput.value = img.width;
+                heightInput.value = img.height;
+                
+                // Set up Crop Canvas
+                const containerWidth = document.querySelector('.card').offsetWidth - 50;
+                scale = Math.min(containerWidth / img.width, 1);
+                cropCanvas.width = img.width * scale;
+                cropCanvas.height = img.height * scale;
+                cropArea = { x: 20, y: 20, w: cropCanvas.width * 0.6, h: cropCanvas.height * 0.6 };
+                
+                compressBtn.disabled = false;
+                cropBtn.disabled = false;
+                resultPanel.style.display = 'none';
+                renderCrop();
+            };
+            img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    };
+
+    // --- FITUR KOMPRESI ---
+    qualityInput.oninput = () => document.getElementById('qVal').innerText = qualityInput.value + '%';
+    widthInput.oninput = () => { if(document.getElementById('aspectRatio').checked) heightInput.value = Math.round(widthInput.value / originalRatio); };
+    heightInput.oninput = () => { if(document.getElementById('aspectRatio').checked) widthInput.value = Math.round(heightInput.value * originalRatio); };
+
+    compressBtn.onclick = () => {
+    processFinal(img, 0, 0, img.width, img.height, 'kompres-nteste05'); 
+    };
+
+    // --- FITUR CROP (VISUAL) ---
+    function renderCrop() {
+        if(!img.src) return;
+        ctxCrop.clearRect(0, 0, cropCanvas.width, cropCanvas.height);
+        ctxCrop.drawImage(img, 0, 0, cropCanvas.width, cropCanvas.height);
+        ctxCrop.fillStyle = "rgba(0,0,0,0.6)";
+        ctxCrop.fillRect(0, 0, cropCanvas.width, cropCanvas.height);
+        
+        ctxCrop.save();
+        ctxCrop.beginPath();
+        ctxCrop.rect(cropArea.x, cropArea.y, cropArea.w, cropArea.h);
+        ctxCrop.clip();
+        ctxCrop.drawImage(img, 0, 0, cropCanvas.width, cropCanvas.height);
+        ctxCrop.restore();
+
+        ctxCrop.strokeStyle = "#fff";
+        ctxCrop.lineWidth = 2;
+        ctxCrop.strokeRect(cropArea.x, cropArea.y, cropArea.w, cropArea.h);
+        ctxCrop.fillStyle = "#4f46e5";
+        ctxCrop.fillRect(cropArea.x + cropArea.w - 8, cropArea.y + cropArea.h - 8, 16, 16);
+    }
+
+    function handleStart(e) {
+    const rect = cropCanvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const mx = clientX - rect.left;
+    const my = clientY - rect.top;
+
+    // 1. PRIORITAS: Cek apakah kena sudut biru (Resize)
+    // Beri toleransi 30px agar jari tidak harus pas di titik biru
+    const tolerance = 30;
+    const isOnHandle = mx > (cropArea.x + cropArea.w - tolerance) && mx < (cropArea.x + cropArea.w + tolerance) &&
+                       my > (cropArea.y + cropArea.h - tolerance) && my < (cropArea.y + cropArea.h + tolerance);
+
+    if (isOnHandle) {
+        isResizing = true;
+        isMoving = false;
+        isCreating = false;
+    } 
+    // 2. Cek apakah kena area dalam kotak (Pindah/Move)
+    else if (mx > cropArea.x && mx < cropArea.x + cropArea.w && my > cropArea.y && my < cropArea.y + cropArea.h) {
+        isMoving = true;
+        isResizing = false;
+        isCreating = false;
+        startX = mx - cropArea.x; 
+        startY = my - cropArea.y;
+    } 
+    // 3. Jika di luar kotak (Buat baru)
+    else {
+        isCreating = true;
+        isMoving = false;
+        isResizing = false;
+        startX = mx;
+        startY = my;
+        cropArea = { x: mx, y: my, w: 0, h: 0 };
+    }
+}
+    function handleMove(e) {
+    if (!isMoving && !isResizing && !isCreating) return;
+    const rect = cropCanvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const mx = clientX - rect.left;
+    const my = clientY - rect.top;
+
+    if (isMoving) {
+        cropArea.x = Math.max(0, Math.min(mx - startX, cropCanvas.width - cropArea.w));
+        cropArea.y = Math.max(0, Math.min(my - startY, cropCanvas.height - cropArea.h));
+    } else if (isResizing) {
+        // Lebar baru adalah posisi mouse dikurangi posisi awal kotak (X tetap)
+        let nw = mx - cropArea.x;
+        let nh = my - cropArea.y;
+
+        const ratio = document.getElementById('aspectRatioSelect').value;
+        if (ratio !== "free") {
+            const r = parseFloat(ratio);
+            if (Math.abs(nw / nh) > r) nw = nh * r; else nh = nw / r;
+        }
+
+        // Batasi ukuran minimal 20px dan maksimal batas kanvas
+        cropArea.w = Math.max(20, Math.min(nw, cropCanvas.width - cropArea.x));
+        cropArea.h = Math.max(20, Math.min(nh, cropCanvas.height - cropArea.y));
+    } else if (isCreating) {
+        let nw = mx - startX;
+        let nh = my - startY;
+        // ... logika aspect ratio untuk isCreating ...
+        cropArea.x = nw < 0 ? mx : startX;
+        cropArea.y = nh < 0 ? my : startY;
+        cropArea.w = Math.abs(nw);
+        cropArea.h = Math.abs(nh);
+    }
+    renderCrop();
+}
+
+
+    cropCanvas.addEventListener('mousedown', handleStart);
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', () => isMoving = isResizing = isCreating = false);
+    cropCanvas.addEventListener('touchstart', handleStart, {passive: false});
+    window.addEventListener('touchmove', handleMove, {passive: false});
+
+    cropBtn.onclick = () => {
+
+    /*if (upload.files && upload.files[0]) {
+    formatSelect.value = upload.files[0].type;
+    } */
+    
+    const realX = cropArea.x / scale;
+    const realY = cropArea.y / scale;
+    const realW = cropArea.w / scale;
+    const realH = cropArea.h / scale;
+    
+    processFinal(img, realX, realY, realW, realH, 'krop-nteste05');
+};
+
+
+
+   function processFinal(source, sx, sy, sw, sh, mode) {
+    // 1. Tentukan dimensi target
+    const targetW = (sx === 0 && sy === 0) ? parseInt(widthInput.value) : sw;
+    const targetH = (sx === 0 && sy === 0) ? parseInt(heightInput.value) : sh;
+    
+    // 2. Gunakan kanvas sementara untuk kompresi agar tidak bentrok dengan UI
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCanvas.width = targetW;
+    tempCanvas.height = targetH;
+    tempCtx.drawImage(source, sx, sy, sw, sh, 0, 0, targetW, targetH);
+
+    const mime = formatSelect.value;
+    const quality = qualityInput.value / 100;
+    const dataUrl = tempCanvas.toDataURL(mime, quality);
+    
+    // 3. Hitung Ukuran (Pastikan upload.files[0] ada)
+    const head = `data:${mime};base64,`;
+    const newSize = ((dataUrl.length - head.length) * 3 / 4 / 1024).toFixed(2);
+    const oldFile = upload.files[0];
+    const oldSize = oldFile ? (oldFile.size / 1024).toFixed(2) : "0";
+
+    // 4. Update Panel & Keterangan Lengkap
+    resultPanel.style.display = 'block';
+    resultPanel.innerHTML = `
+        <div class="info-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+            <div class="info-item" style="background: #f0fdf4; padding: 10px; border-radius: 8px; border: 1px solid #dcfce7;">
+                <b style="color: #166534; display: block; font-size: 0.7rem;">FILE LAMA</b>
+                Format: ${oldFile ? oldFile.type.split('/')[1].toUpperCase() : '-'}<br>
+                Dimensi: ${img.width} x ${img.height}<br>
+                Ukuran: ${oldSize} KB
+            </div>
+            <div class="info-item" style="background: #eff6ff; padding: 10px; border-radius: 8px; border: 1px solid #dbeafe;">
+                <b style="color: #1e40af; display: block; font-size: 0.7rem;">FILE BARU</b>
+                Format: ${mime.split('/')[1].toUpperCase()}<br>
+                Dimensi: ${targetW} x ${targetH} px<br>
+                Ukuran: ${newSize} KB
+            </div>
+        </div>
+        <img src="${dataUrl}" id="previewImg" style="width: 100%; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 10px;">
+        <button id="downloadBtn" onclick="executeDownload('${dataUrl}', '${mode}')" style="background:#10b981; color:white; width:100%; padding:12px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">DOWNLOAD SEKARANG</button>
+    `;
+        
+    resultPanel.scrollIntoView({behavior: 'smooth'});
+}
+
+// Fungsi pembantu download agar rapi
+function executeDownload(url, mode) {
+    const ext = formatSelect.value.split('/')[1];
+    const link = document.createElement('a');
+    link.download = `${mode}.${ext}`;
+    link.href = url;
+    link.click();
+}
+
+const sidebar = document.getElementById("mySidebar");
+        const overlaynav = document.getElementById("overlaynav");
+        
+        function openNav() {
+            sidebar.style.width = "280px";
+            overlaynav.style.display = "block";
+            document.body.style.overflow = "hidden";
+        }
+        
+        function closeNav() {
+            sidebar.style.width = "0";
+            overlaynav.style.display = "none";
+            // Mengembalikan scroll body
+            document.body.style.overflow = "auto";
+        }
+
+</script>
+<p class="visually-hidden">Dalam dunia digital yang serba cepat, kecepatan loading website dan efisiensi ruang penyimpanan adalah kunci utama. Preskrop hadir sebagai solusi cerdas bagi Anda yang membutuhkan <strong>aplikasi kompres dan kroping gambar online</strong>yang praktis, cepat, dan berkualitas tinggi.</p>
+<p class="visually-hidden"><strong>PresKrop</strong> adalah alat optimasi gambar berbasis web yang dirancang khusus untuk membantu fotografer, desainer grafis, pengelola konten, hingga pemilik toko online. Dengan antarmuka yang intuitif, Preskrop memungkinkan Anda untuk mengubah ukuran (resize), memotong (crop), dan memperkecil ukuran file (compress) gambar hanya dalam beberapa klik tanpa perlu menginstal perangkat lunak berat.</p>
+<p class="visually-hidden">Menggunakan gambar berukuran besar secara langsung dapat memperlambat performa situs web dan menghabiskan kuota data pengguna. Dengan<strong>aplikasi kompres gambar</strong>seperti Preskrop, Anda mendapatkan manfaat berikut:<br>Hemat Penyimpanan: Kurangi beban server atau memori perangkat Anda dengan menyimpan file yang lebih ringan.<br>Optimasi Media Sosial: Setiap platform media sosial memiliki standar ukuran berbeda. Fitur kroping gambar kami memudahkan Anda menyesuaikan komposisi foto agar terlihat profesional di feed manapun.</p>
+<p class="visually-hidden">Cara Menggunakan Preskrop, Prosesnya sangat simpel:<br>Buka situs resmi Preskrop.<br>Unggah gambar yang ingin Anda edit.<br>Pilih fitur Kompres untuk memperkecil ukuran atau Crop untuk memotong bagian tertentu.<br>Sesuaikan pengaturan sesuai keinginan dan klik tombol proses.<br>Unduh hasil akhirnya secara instan.</p>
+<p class="visually-hidden">Preskrop adalah kawan setia bagi siapa saja yang bekerja dengan konten visual. Tidak perlu lagi bingung dengan aplikasi editing yang rumit. Dapatkan hasil maksimal dengan usaha minimal hanya di Preskrop—solusi <strong>kompres dan kroping gambar online</strong> terbaik untuk produktivitas Anda.</p>
+</body>
+</html>
