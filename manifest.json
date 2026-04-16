@@ -1,0 +1,11 @@
+{
+    "name": "PresKrop: Aplikasi Kompres dan Krop Gambar",
+    "short_name": "PresKrop",
+    "description": "Aplikasi Kompres ukuran dan kroping gambar Online",
+    "icons": "preskrop-favicon.jpeg",
+    "theme_color": "#2D2D2D",
+    "background_color": "#2D2D2D",
+    "display": "standalone",
+    "start_url": "./index.html",
+    "orientation": "portrait"
+}
